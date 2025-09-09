@@ -1,0 +1,296 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        -144
+      ],
+      "id": "d869fdf9-3f8b-4a5f-a906-56c8fb0ea3b5",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://internal.users.n8n.cloud/webhook/custom-erp",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "unique_id",
+              "value": "dce79be5e5cb122cca5ada4c90a20433"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        48
+      ],
+      "id": "9d4eb39a-2c6f-4804-999a-c42aca75131c",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "y7Yfi2s7IBvw94sv",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appRsDI6CUIeUhR50",
+          "mode": "list",
+          "cachedResultName": "Online_class",
+          "cachedResultUrl": "https://airtable.com/appRsDI6CUIeUhR50"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblvyCZiaosD7fLod",
+          "mode": "list",
+          "cachedResultName": "sales_team_data",
+          "cachedResultUrl": "https://airtable.com/appRsDI6CUIeUhR50/tblvyCZiaosD7fLod"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "orderID": "={{ $json.orderID }}",
+            "employeeName": "={{ $json.employeeName }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "orderID",
+              "displayName": "orderID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "employeeName",
+              "displayName": "employeeName",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        288,
+        -128
+      ],
+      "id": "829697fe-796d-4a58-90a1-536917189e16",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "1TIOtZPaA7R01qfG",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "42f3460f-953f-4fbd-bce8-341b26c26200",
+              "leftValue": "={{ $json.orderStatus }}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        48
+      ],
+      "id": "2dcc3a00-6b32-4c8d-8407-37a00d7f22b0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8396e1e0-9e52-4ed9-b5e5-63fcd9c34d47",
+              "name": "OrderId",
+              "value": "={{ $json.orderID }}",
+              "type": "number"
+            },
+            {
+              "id": "b2dc1cff-6d11-488e-8075-f73409cc1d63",
+              "name": "employeeName",
+              "value": "={{ $json.employeeName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -128
+      ],
+      "id": "cbb35a3a-acbe-4b88-8261-ef6d7da846d8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let items = $input.all();\nlet totalBooked = items.length;\nlet bookedSum = 0;\n\nfor (let i = 0; i < items.length; i++) {\n  bookedSum = bookedSum + items[i].json.orderPrice;\n}\n\nreturn [{ json: { totalBooked, bookedSum } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        64
+      ],
+      "id": "1f67a662-f12e-4e8e-995c-a17a455a7c2e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=This week we've {{$json[\"totalBooked\"]}} booked orders with a total value of {{$json[\"bookedSum\"]}}. My Unique ID: {{ $('HTTP Request').params[\"headerParameters\"][\"parameters\"][0][\"value\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        480,
+        64
+      ],
+      "id": "021427bd-e1d1-4f12-b92c-2abd60eb7b6f",
+      "name": "Discord",
+      "webhookId": "c15a74e8-90ad-434c-957a-2482842ed0f3",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "1JL6mDhs4YGLHkJP",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ba1eedca-0959-4391-a964-dc7ecaf9afb0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "79c74547f16fd0bd9a9988d91745a3ea2418cd769414c41f333de46acf9e9023"
+  },
+  "id": "gBBKFAN4hH4H2zuu",
+  "tags": []
+}
